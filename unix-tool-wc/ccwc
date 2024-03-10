@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""A personalized version of the unix command line tool wc"""
+
+
+import sys
+
+
+def count_bytes(content):
+    '''
+    params: content - content of the file to count its byte
+    returns number of bytes
+    '''
+    return len(content)
+
+
+def count_lines(content):
+    '''
+    params: content- content of file
+    returns number of lines in content
+    '''
+    lines = content.splitlines()
+    return len(lines)
+
+
+def count_words(content):
+    '''
+    returns number of words in content
+    '''
+    words = content.split()
+    return len(words)
+
+
+def count_characters(content):
+    '''returns number of character in content'''
+    return len(content)
+
+
+def ccwc(flag, file):
+    match flag:
+        case "-c":
+            return count_bytes(file)
+
+        case "-l":
+            return count_lines(file)
+
+        case "-w":
+            return count_words(file)
+
+        case "-m":
+            return count_characters(file)
+
+        case "-d":
+            lines = count_lines(file)
+            words = count_words(file)
+            bytes = count_bytes(file)
+            return f"{lines} {words} {bytes}"
+
+
+def print_exception(message):
+    print("Error:", message)
+    return -1
+
+
+if __name__ == "__main__":
+
+    flags = ["-c", "-l", "-w", "-m", "-d"]
+
+    args = sys.argv
+    args_count = len(args)
+    flag = args[1]
+
+    def get_content(file_path):
+        '''
+        params: file_path - file to get content
+        returns the content in file_path
+        '''
+        try:
+            with open(file_path) as file:
+                content = file.read()
+            return content
+        except Exception as e:
+            print_exception(e)
+
+    def get_content_byte(file_path):
+        '''return the content of file_path, opening it as b format'''
+        try:
+            with open(file_path, 'b+r') as file:
+                content = file.read()
+            return content
+        except Exception as e:
+            print_exception(e)
+
+    if args_count == 3 and flag in flags:
+        file_path = args[2]
+        content = get_content_byte(
+            file_path) if flag == '-c' else get_content(file_path)
+        res = ccwc(flag, content)
+        print(f'{res} {file_path}')
+
+    elif args_count == 2 and flag not in flags:
+        flag = flags[-1]
+        file_path = args[1]
+        content = get_content_byte(
+            file_path) if flag == '-c' else get_content(file_path)
+        res = ccwc(flag, content)
+        print(f'{res} {file_path}')
+
+    elif args_count == 2 and flag in flags:
+        if sys.stdin.isatty():
+            content = input()
+        else:
+            content = sys.stdin.read()
+        print(ccwc(flag, content))
